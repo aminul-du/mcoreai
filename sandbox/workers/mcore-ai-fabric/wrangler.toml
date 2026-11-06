@@ -1,0 +1,17 @@
+name = "mcore-ai-fabric"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "MCORE_KV"
+id = "87f9cdd65742402593687d116f7ccbf2"
+
+[[d1_databases]]
+binding = "MCORE_D1"
+database_name = "mcore-evidence-store"
+database_id = "b57e050d-70ba-4909-acfd-c19c1ef4c7d3"
+
+# Routes: cf-ais001.mcoreai.dev/*, ais001.mcoreai.dev/api/*

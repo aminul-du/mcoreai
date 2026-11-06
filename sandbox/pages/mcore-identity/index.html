@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCORE-FDR-AIS-001 | Meticulous Core Inc.</title>
+  <meta name="description" content="MCoreAI Research Workspace — Universal Documentation, Evidence & AI Knowledge Fabric">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0e1a;
+      --bg-card: #111827;
+      --border: #1e293b;
+      --accent: #6366f1;
+      --accent2: #06b6d4;
+      --accent3: #8b5cf6;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --green: #3fb950;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient background */
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(30, 41, 59, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* ---- Banner ---- */
+    .banner {
+      background: linear-gradient(135deg, var(--bg-card) 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    }
+
+    .banner-glow {
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent2);
+      margin-bottom: 1.5rem;
+    }
+
+    .badge-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo span {
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    /* ---- Identity Cards ---- */
+    .identity-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .identity-grid { grid-template-columns: 1fr; }
+      .container { padding: 1.5rem 1rem; }
+      .banner { padding: 2rem 1.5rem; }
+      .logo { font-size: 1.75rem; }
+    }
+
+    .id-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.3s;
+    }
+
+    .id-card:hover { border-color: var(--accent); }
+
+    .id-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .id-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .id-value a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .id-value a:hover { text-decoration: underline; }
+
+    /* ---- Status Strip ---- */
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* ---- Architecture Section ---- */
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin: 3rem 0 1rem;
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .arch-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .arch-card h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--accent2);
+    }
+
+    .arch-card p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .footer a { color: var(--accent2); text-decoration: none; }
+
+    /* ---- MCORE ASCII Art ---- */
+    .ascii-art {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      line-height: 1.2;
+      color: var(--accent);
+      opacity: 0.3;
+      white-space: pre;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    @media (min-width: 700px) {
+      .ascii-art { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <div class="grid-bg"></div>
+
+  <div class="container">
+    <!-- ===== IDENTITY BANNER ===== -->
+    <div class="banner">
+      <div class="banner-glow"></div>
+
+      <div class="ascii-art">
+███╗   ███╗ ██████╗  ██████╗ ███████╗
+████╗ ████║██╔═══██╗██╔═══██╗██╔════╝
+██╔████╔██║██║   ██║██║   ██║███████╗
+██║╚██╔╝██║██║   ██║██║   ██║╚════██║
+██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║
+╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝
+      </div>
+
+      <div class="badge">
+        <span class="badge-dot"></span>
+        MCORE-FDR-AIS-001 · SANDBOX ACTIVE
+      </div>
+
+      <div class="logo">Meticulous Core <span>Inc.</span></div>
+      <div class="tagline">Universal Documentation, Evidence & AI Knowledge Fabric</div>
+
+      <div class="identity-grid">
+        <div class="id-card">
+          <div class="id-label">Entity</div>
+          <div class="id-value">Meticulous Core Inc. (MCore)</div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Founder</div>
+          <div class="id-value">Aminul Islam Shamim</div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Operator ID</div>
+          <div class="id-value" style="font-family: var(--font-mono); font-size: 0.85rem;">MCORE-FDR-AIS-001</div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Baseline</div>
+          <div class="id-value" style="font-family: var(--font-mono);">@AIS-DU</div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Project Domain</div>
+          <div class="id-value"><a href="https://shorbornoai.com">shorbornoai.com</a> (DU-PROJECT)</div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Dev Sandbox</div>
+          <div class="id-value"><a href="https://ais001.mcoreai.dev">ais001.mcoreai.dev</a></div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Local AI (Ollama)</div>
+          <div class="id-value"><a href="https://cf-ais001.mcoreai.dev">cf-ais001.mcoreai.dev</a></div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Contact</div>
+          <div class="id-value"><a href="mailto:shorbornoai@gmail.com">shorbornoai@gmail.com</a></div>
+        </div>
+        <div class="id-card">
+          <div class="id-label">Identity</div>
+          <div class="id-value"><a href="mailto:me@aminul-du.com">me@aminul-du.com</a></div>
+        </div>
+      </div>
+
+      <div class="status-strip">
+        <div class="status-item"><span class="status-dot"></span> Cloudflare Tunnel: 78d7fa3b</div>
+        <div class="status-item"><span class="status-dot"></span> HTTP/3 QUIC</div>
+        <div class="status-item"><span class="status-dot"></span> Zero Trust Access</div>
+        <div class="status-item"><span class="status-dot"></span> D1 Evidence Store</div>
+        <div class="status-item"><span class="status-dot"></span> Workers AI: Llama 3.1</div>
+        <div class="status-item"><span class="status-dot"></span> AI Search: mcore-fabric</div>
+        <div class="status-item"><span class="status-dot"></span> Debian 13 / WSL2</div>
+      </div>
+    </div>
+
+    <!-- ===== ARCHITECTURE ===== -->
+    <div class="section-title">// MCORE-DOCS-001 Architecture</div>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h3>Connectivity</h3>
+        <p>Cloudflare Tunnel (outbound, post-quantum)<br>5 routes: ais001 · app · ssh · api · docs</p>
+      </div>
+      <div class="arch-card">
+        <h3>Edge Security</h3>
+        <p>HTTP/3 · 0-RTT · Early Hints · HSTS<br>WAF · DDoS · Access (Email OTP / Google)</p>
+      </div>
+      <div class="arch-card">
+        <h3>Compute</h3>
+        <p>2 Workers: edge-gateway + health-monitor<br>Cron */5min · KV cache · D1 audit logging</p>
+      </div>
+      <div class="arch-card">
+        <h3>Data Layer</h3>
+        <p>D1: evidence + policies + audit<br>KV: state cache · Queue: async ingestion</p>
+      </div>
+      <div class="arch-card">
+        <h3>AI Fabric</h3>
+        <p>Workers AI: Llama 3.1 8B + BGE embeddings<br>AI Search: mcore-fabric (hybrid vector+keyword)</p>
+      </div>
+      <div class="arch-card">
+        <h3>Compliance</h3>
+        <p>CIA · SOC 2 · ISO 27001 · NIST 800-53<br>10 control policies seeded in D1</p>
+      </div>
+      <div class="arch-card">
+        <h3>Local Runtime</h3>
+        <p>Debian 13 / WSL2 · Docker Engine<br>Non-root UID 1001 · Alpine containers</p>
+      </div>
+      <div class="arch-card">
+        <h3>Home Network</h3>
+        <p>WSL bridge: 172.23.180.x<br>WARP-to-Tunnel private SSH access</p>
+      </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer">
+      <p>MCORE-DOCS-001 · Cloudflare Tunnel & Networking Strategy</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="https://mcore-status.pages.dev">Status Dashboard</a> ·
+        <a href="https://ais001.mcoreai.dev">Dev Sandbox</a> ·
+        <a href="https://shorbornoai.com">Production</a>
+      </p>
+      <p style="margin-top: 1rem; opacity: 0.5;">
+        © 2026 Meticulous Core Inc. · Aminul Islam Shamim (AIS) · @AIS-DU
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Live health check integration
+    fetch('https://mcore-health-monitor.me-419.workers.dev/status')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const allHealthy = data.every(s => s.healthy !== false);
+          const badge = document.querySelector('.badge');
+          if (!allHealthy) {
+            badge.innerHTML = '<span class="badge-dot" style="background:#f85149;box-shadow:0 0 8px #f85149"></span> MCORE-FDR-AIS-001 · DEGRADED';
+          }
+        }
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>

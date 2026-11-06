@@ -1,0 +1,17 @@
+# Universal .dockerignore — keeps build context small
+.git
+.github
+node_modules
+.next
+dist
+target
+__pycache__
+*.pyc
+.env
+.env.*
+secrets/
+*.pem
+*-sa.json
+*.md
+docker-compose*.yml
+Makefile

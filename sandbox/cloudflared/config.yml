@@ -1,0 +1,50 @@
+# =============================================================================
+# Locally-managed Tunnel config (alternative to dashboard-managed / token mode)
+# Use this if you prefer full local control of ingress rules.
+# =============================================================================
+# Prereqs:
+#   cloudflared tunnel login
+#   cloudflared tunnel create fabric-sandbox
+#   cloudflared tunnel route dns fabric-sandbox fabric.shorbornoai.com  (repeat per hostname)
+#
+# Then run:
+#   cloudflared tunnel --config cloudflared/config.yml run fabric-sandbox
+#
+# Validate before running:
+#   cloudflared tunnel --config cloudflared/config.yml ingress validate
+# =============================================================================
+
+tunnel: <TUNNEL_UUID>
+credentials-file: /root/.cloudflared/<TUNNEL_UUID>.json
+
+# Top-level origin defaults
+originRequest:
+  connectTimeout: 30s
+  noTLSVerify: false          # origins are plain HTTP on the internal network
+  # If you run the Access JWT check at the origin, enable normalization:
+  # (requires cloudflared >= 2026.10.0)
+  # disableChunkedEncoding: false
+
+ingress:
+  # ---- Core Fabric ----
+  - hostname: fabric.shorbornoai.com
+    service: http://web:3000
+  - hostname: api.shorbornoai.com
+    service: http://policy:8080
+  - hostname: ingest.shorbornoai.com
+    service: http://ingest:8000
+
+  # ---- Domain Module: Network Engineering ----
+  - hostname: neteng.shorbornoai.com
+    service: http://neteng:9000
+
+  # ---- Domain Module: Cyber-Range ----
+  - hostname: cyberrange.shorbornoai.com
+    service: http://cyberrange:9100
+
+  # ---- Domain Module: ShorbornoAI ----
+  - hostname: shorborno.shorbornoai.com
+    service: http://shorborno:9200
+
+  # ---- Catch-all (REQUIRED as the last rule) ----
+  - service: http_status:404

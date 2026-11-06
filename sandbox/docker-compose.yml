@@ -1,0 +1,263 @@
+# =============================================================================
+# docker-compose.yml — Base dev/staging configuration
+# All services: non-root UID 1001, Alpine, health checks, restart policies
+# =============================================================================
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  user: "1001:1001"
+  security_opt:
+    - no-new-privileges:true
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+
+services:
+  # =========================================================================
+  # Frontend — Next.js (Node 22 Alpine, UID 1001)
+  # =========================================================================
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: fabric-web
+    <<: *service-defaults
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      POLICY_CORE_URL: http://policy:8080
+      INGEST_URL: http://ingest:8000
+      NEXTAUTH_URL: https://fabric.${PRIMARY_DOMAIN:-shorbornoai.com}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+    expose: ["3000"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      policy:
+        condition: service_healthy
+
+  # =========================================================================
+  # Policy Core — Rust/Axum (Alpine, UID 1001)
+  # =========================================================================
+  policy:
+    build:
+      context: .
+      dockerfile: services/policy-core/Dockerfile
+    container_name: fabric-policy
+    <<: *service-defaults
+    environment:
+      RUST_LOG: info
+      DATABASE_URL: postgres://fabric:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/fabric
+      VECTOR_ADAPTER: ${VECTOR_ADAPTER:-qdrant}
+      QDRANT_URL: http://qdrant:6333
+      JWT_ISSUER: https://api.${PRIMARY_DOMAIN:-shorbornoai.com}
+      JWT_AUDIENCE: fabric-api
+    expose: ["8080"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # =========================================================================
+  # Ingestion Workers — Python/FastAPI (Alpine, UID 1001, multi-stage)
+  # =========================================================================
+  ingest:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.python
+      args:
+        SERVICE: ingestion
+        PORT: "8000"
+    container_name: fabric-ingest
+    <<: *service-defaults
+    environment:
+      DATABASE_URL: postgres://fabric:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/fabric
+      VECTOR_ADAPTER: ${VECTOR_ADAPTER:-qdrant}
+      QDRANT_URL: http://qdrant:6333
+      POLICY_CORE_URL: http://policy:8080
+      HEALTH_HOST: "127.0.0.1"
+      HEALTH_PORT: "8000"
+      # Provider adapters (env-isolated, loaded from .env)
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_INSTALLATION_ID: ${GITHUB_INSTALLATION_ID:-}
+      LOCAL_AI_BASE_URL: ${LOCAL_AI_BASE_URL:-http://localhost:11434}
+      LOCAL_AI_API_KEY: ${LOCAL_AI_API_KEY:-}
+    volumes:
+      - ./secrets:/run/secrets:ro
+    expose: ["8000"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+
+  # =========================================================================
+  # PostgreSQL 17 — metadata + evidence store
+  # =========================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: fabric-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fabric
+      POSTGRES_USER: fabric
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    expose: ["5432"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fabric -d fabric"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Postgres runs as UID 70 in alpine image; cannot force 1001 without custom image
+
+  # =========================================================================
+  # Qdrant — vector store (replaceable adapter)
+  # =========================================================================
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: fabric-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    expose: ["6333"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # =========================================================================
+  # Cloudflare Tunnel — outbound-only bridge to Cloudflare edge
+  # =========================================================================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: fabric-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --metrics 0.0.0.0:2000 run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:2000/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      web:
+        condition: service_healthy
+      policy:
+        condition: service_healthy
+      ingest:
+        condition: service_healthy
+
+  # =========================================================================
+  # Domain Module: Network Engineering
+  # =========================================================================
+  neteng:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.python
+      args:
+        SERVICE: neteng
+        PORT: "9000"
+    container_name: fabric-neteng
+    <<: *service-defaults
+    environment:
+      DATABASE_URL: postgres://fabric:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/fabric
+      HEALTH_HOST: "127.0.0.1"
+      HEALTH_PORT: "9000"
+    expose: ["9000"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # =========================================================================
+  # Domain Module: Cyber-Range
+  # =========================================================================
+  cyberrange:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.python
+      args:
+        SERVICE: cyberrange
+        PORT: "9100"
+    container_name: fabric-cyberrange
+    <<: *service-defaults
+    environment:
+      DATABASE_URL: postgres://fabric:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/fabric
+      HEALTH_HOST: "127.0.0.1"
+      HEALTH_PORT: "9100"
+    expose: ["9100"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # =========================================================================
+  # Domain Module: ShorbornoAI
+  # =========================================================================
+  shorborno:
+    build:
+      context: .
+      dockerfile: services/Dockerfile.python
+      args:
+        SERVICE: shorborno
+        PORT: "9200"
+    container_name: fabric-shorborno
+    <<: *service-defaults
+    environment:
+      DATABASE_URL: postgres://fabric:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/fabric
+      HEALTH_HOST: "127.0.0.1"
+      HEALTH_PORT: "9200"
+    expose: ["9200"]
+    networks: [fabric-net]
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  fabric-net:
+    driver: bridge
+
+volumes:
+  pg_data:
+  qdrant_data:

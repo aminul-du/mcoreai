@@ -1,0 +1,97 @@
+# =============================================================================
+# docker-compose.prod.yml — Production overlay
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Adds: resource limits, logging limits, update config for zero-downtime, replicas
+# =============================================================================
+
+x-prod-defaults: &prod-defaults
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+  deploy:
+    restart_policy:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 5
+      window: 120s
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    rollback_config:
+      parallelism: 1
+      order: start-first
+
+services:
+  web:
+    <<: *prod-defaults
+    deploy:
+      <<: *prod-defaults-deploy
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  policy:
+    <<: *prod-defaults
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 64M
+
+  ingest:
+    <<: *prod-defaults
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  neteng:
+    <<: *prod-defaults
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  cyberrange:
+    <<: *prod-defaults
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  shorborno:
+    <<: *prod-defaults
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  cloudflared:
+    <<: *prod-defaults
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M

@@ -1,0 +1,98 @@
+# =============================================================================
+# MCORE-DOCS-001 — Debian WSL2 Home Network Configuration
+# Enables local home network access to the sandbox via WSL bridge
+# =============================================================================
+
+# ---- WSL2 Network: /etc/wsl.conf (Windows side) ----
+# Add this to C:\Users\YourUser\.wslconfig to configure the WSL2 VM:
+#
+# [wsl2]
+# networkingMode=mirrored
+# # OR use NAT mode with port forwarding:
+# # localhostForwarding=true
+# memory=8GB
+# processors=4
+#
+# With mirrored mode, WSL shares the Windows host IP — all home network
+# devices can reach WSL services directly on the LAN IP.
+
+# ---- WSL2 Internal Config: /etc/wsl.conf (Linux side) ----
+# Run inside WSL:
+# sudo tee /etc/wsl.conf << 'WSLCONF'
+# [network]
+# generateResolvConf = true
+# 
+# [boot]
+# systemd = true
+# WSLCONF
+
+# ---- Home Network Access: Docker Compose Override ----
+# This file publishes ports on the WSL bridge IP (172.23.180.160)
+# so other devices on the home network can access the sandbox directly.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.home.yml up -d
+
+services:
+  web:
+    ports:
+      - "172.23.180.160:3000:3000"    # Home LAN access to Next.js
+
+  policy:
+    ports:
+      - "172.23.180.160:8080:8080"    # Home LAN access to Rust/Axum
+
+  ingest:
+    ports:
+      - "172.23.180.160:8000:8000"    # Home LAN access to FastAPI
+
+  neteng:
+    ports:
+      - "172.23.180.160:9000:9000"
+
+  cyberrange:
+    ports:
+      - "172.23.180.160:9100:9100"
+
+  shorborno:
+    ports:
+      - "172.23.180.160:9200:9200"
+
+  postgres:
+    ports:
+      - "172.23.180.160:5432:5432"    # Home LAN DB access (restrict with firewall)
+
+  qdrant:
+    ports:
+      - "172.23.180.160:6333:6333"    # Home LAN vector store access
+
+# ---- Firewall Rules (run on Debian/WSL) ----
+# Allow only home network subnet (e.g. 192.168.1.0/24) to access sandbox:
+#
+# sudo iptables -A INPUT -s 192.168.1.0/24 -p tcp --dport 3000 -j ACCEPT
+# sudo iptables -A INPUT -s 192.168.1.0/24 -p tcp --dport 8000 -j ACCEPT
+# sudo iptables -A INPUT -s 192.168.1.0/24 -p tcp --dport 8080 -j ACCEPT
+# sudo iptables -A INPUT -s 192.168.1.0/24 -p tcp --dport 5432 -j ACCEPT
+# sudo iptables -A INPUT -p tcp --dport 3000 -j DROP
+# sudo iptables -A INPUT -p tcp --dport 8000 -j DROP
+# sudo iptables -A INPUT -p tcp --dport 8080 -j DROP
+# sudo iptables -A INPUT -p tcp --dport 5432 -j DROP
+#
+# Or with ufw:
+# sudo ufw allow from 192.168.1.0/24 to any port 3000
+# sudo ufw allow from 192.168.1.0/24 to any port 8000
+# sudo ufw allow from 192.168.1.0/24 to any port 8080
+# sudo ufw deny 3000
+# sudo ufw deny 8000
+# sudo ufw deny 8080
+
+# ---- Access from Home Network ----
+# From any device on your home WiFi:
+#   Web:      http://172.23.180.160:3000
+#   API:      http://172.23.180.160:8080
+#   Ingest:   http://172.23.180.160:8000
+#   Postgres: psql -h 172.23.180.160 -U fabric -d fabric
+#   Qdrant:   http://172.23.180.160:6333
+#
+# From outside home (via Cloudflare Tunnel):
+#   Web:      https://ais001.mcoreai.dev  (Access-protected)
+#   API:      https://api.mcoreai.dev      (Access-protected)
+#   SSH:      ssh.mcoreai.dev              (WARP + Access)

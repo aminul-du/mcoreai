@@ -1,0 +1,10 @@
+name = "mcore-health-monitor"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[kv_namespaces]]
+binding = "MCORE_KV"
+id = "87f9cdd65742402593687d116f7ccbf2"
+
+[triggers]
+crons = ["*/5 * * * *"]
