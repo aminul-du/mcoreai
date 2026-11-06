@@ -18,23 +18,31 @@ logger = logging.getLogger("terminal-ai")
 MTE_WRITE_URL = os.getenv("MTE_WRITE_URL", "http://127.0.0.1:8100/mte/write")
 MTE_TIMEOUT_SECONDS = float(os.getenv("MTE_TIMEOUT_SECONDS", "5.0"))
 
-# Use the correct new model ID
-VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-3.8-flash")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_NEW_API_KEY_HERE")
+# Vertex AI Configuration
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "595209408050")
+GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
+VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-1.5-flash")
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "PLACEHOLDER")
 
 vertex_model = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global vertex_model
-    logger.info("Initializing Gemini API...")
+    logger.info("Initializing Vertex AI Client...")
     try:
-        # New SDK client initialization
-        client = genai.Client(api_key=GEMINI_API_KEY, vertexai=False)
+        # Explicitly force Vertex AI mode using your project number
+        client = genai.Client(
+            vertexai=True, 
+            project=GCP_PROJECT_ID, 
+            location=GCP_LOCATION,
+            api_key=GEMINI_API_KEY # Vertex AI accepts API keys in the new SDK
+        )
         vertex_model = client
-        logger.info(f"Gemini model '{VERTEX_MODEL_NAME}' loaded.")
+        logger.info(f"Vertex AI initialized for project {GCP_PROJECT_ID}.")
     except Exception as exc:
-        logger.error("Gemini Initialization Failure: %s", exc)
+        logger.error("Vertex AI Initialization Failure: %s", exc)
         raise RuntimeError(exc) from exc
     yield
     logger.info("Shutting down Terminal AI.")
@@ -74,16 +82,16 @@ async def chat_endpoint(payload: ChatRequest):
         )
 
     if vertex_model is None:
-        raise HTTPException(status_code=500, detail="Gemini uninitialized")
+        raise HTTPException(status_code=500, detail="Vertex AI uninitialized")
 
     try:
-        # Use the new SDK method call
+        # Using the new SDK generate_content method for Vertex AI
         response = vertex_model.models.generate_content(
             model=VERTEX_MODEL_NAME,
             contents=payload.prompt
         )
         ai_text = response.text if response and response.text else ""
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Gemini failed: {exc}")
+        raise HTTPException(status_code=502, detail=f"Vertex AI failed: {exc}")
 
     return ChatResponse(status="success", response=ai_text, mte_verdict="PASS")
