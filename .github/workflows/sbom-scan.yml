@@ -1,0 +1,42 @@
+name: sbom-scan
+on:
+  push:
+    branches: [main]
+
+jobs:
+  security:
+    name: trivy-sbom
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build MTE Image
+        run: |
+          docker build -t mcoresec-mte:test -f mcoresec/services/devsec/memory-trust-engine/Dockerfile mcoresec/services/devsec/memory-trust-engine
+
+      - name: Build API Image
+        run: |
+          docker build -t mcoresec-api:test -f mcoresec/services/api/Dockerfile mcoresec
+
+      - name: Run Trivy (MTE)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mcoresec-mte:test'
+          format: 'sarif'
+          output: 'trivy-mte.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Run Trivy (API)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mcoresec-api:test'
+          format: 'sarif'
+          output: 'trivy-api.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: '.'

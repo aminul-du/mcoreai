@@ -1,0 +1,16 @@
+[project]
+name = "mte"
+version = "0.1.0"
+description = "Memory Trust Engine — CIA Integrity gate for AI memory writes"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0"
+]
+
+[project.scripts]
+mte = "mte.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

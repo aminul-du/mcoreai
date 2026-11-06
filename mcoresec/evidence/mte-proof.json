@@ -1,0 +1,35 @@
+{
+  "test": "mte-proof",
+  "ts": "2026-11-06T10:43:55.390435+00:00",
+  "steps": [
+    {
+      "step": 1,
+      "name": "engine_start",
+      "ok": true,
+      "store": "/srv/mcore/mcore365/mcoresec/services/devsec/memory-trust-engine/data/trusted.jsonl"
+    },
+    {
+      "step": 2,
+      "name": "clean_memory",
+      "verdict": "PASS",
+      "checks": {
+        "provenance": "pass",
+        "injection": "pass",
+        "chain": "pass"
+      }
+    },
+    {
+      "step": 3,
+      "name": "poisoned_memory",
+      "verdict": "BLOCK",
+      "checks": {
+        "provenance": "fail",
+        "injection": "fail",
+        "chain": "pass"
+      }
+    }
+  ],
+  "trusted_count": 2,
+  "quarantine_count": 2,
+  "verdict": "MTE_BLOCKS_POISONED_MEMORY"
+}

@@ -1,0 +1,34 @@
+name: mcoresec
+
+services:
+  mte:
+    build:
+      context: ./services/devsec/memory-trust-engine
+      dockerfile: Dockerfile
+    container_name: mcoresec-mte
+    restart: unless-stopped
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:8100/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: mcoresec-api
+    restart: unless-stopped
+    environment:
+      - MTE_URL=http://mte:8100
+    ports:
+      - "8000:8000"
+    networks: [internal]
+    depends_on:
+      mte:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge
