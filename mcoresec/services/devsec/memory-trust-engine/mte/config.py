@@ -7,6 +7,7 @@ DEFAULT_TRUSTED_SOURCES = (
     "github-attestation",
     "internal-ingest",
     "operator:aminul",
+    "terminal-ai",
 )
 
 DEFAULT_INJECTION_PATTERNS = (
