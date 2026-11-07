@@ -28,6 +28,7 @@
 | 10 | `search` | `search.mcoreai.dev` | CNAME | `78d7fa3b...cfargotunnel.com` | 🟠 Yes | `search.mcoreai.dev/*` | mcore-ai-search | Document indexing + semantic search (BGE embeddings) | Zero Trust Access |
 | 11 | `hooks` | `hooks.mcoreai.dev` | CNAME | `78d7fa3b...cfargotunnel.com` | 🟠 Yes | `hooks.mcoreai.dev/*` | mcore-webhook | Webhook receiver (GitHub, Microsoft, Google, generic) | Service Token |
 | 12 | `gateway` | `gateway.mcoreai.dev` | CNAME | `78d7fa3b...cfargotunnel.com` | 🟠 Yes | `gateway.mcoreai.dev/*` | mcore-gateway | Master API gateway — routes to all other Workers | Zero Trust Access |
+| 13 | `colab` | `colab.mcoreai.dev` | CNAME | `78d7fa3b...cfargotunnel.com` | 🟠 Yes | — (direct tunnel) | — | Colab Bridge → tunnel → WSL `:8899` (Python 3.14 kernel) | Token + Zero Trust |
 
 ### Email Records (mcoreai.dev)
 

@@ -18,10 +18,11 @@ logger = logging.getLogger("terminal-ai")
 MTE_WRITE_URL = os.getenv("MTE_WRITE_URL", "http://127.0.0.1:8100/mte/write")
 MTE_TIMEOUT_SECONDS = float(os.getenv("MTE_TIMEOUT_SECONDS", "5.0"))
 
-# Vertex AI Configuration
+# Vertex AI / Gemini Configuration
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "595209408050")
 GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
-VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-1.5-flash")
+USE_VERTEX_AI = os.getenv("USE_VERTEX_AI", "false").lower() in ("true", "1", "yes")
+VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-3.1-flash-lite-preview")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "PLACEHOLDER")
 
@@ -30,19 +31,22 @@ vertex_model = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global vertex_model
-    logger.info("Initializing Vertex AI Client...")
+    logger.info("Initializing AI Client (Vertex=%s)...", USE_VERTEX_AI)
     try:
-        # Explicitly force Vertex AI mode using your project number
-        client = genai.Client(
-            vertexai=True, 
-            project=GCP_PROJECT_ID, 
-            location=GCP_LOCATION,
-            api_key=GEMINI_API_KEY # Vertex AI accepts API keys in the new SDK
-        )
+        if USE_VERTEX_AI:
+            client = genai.Client(
+                vertexai=True, 
+                project=GCP_PROJECT_ID, 
+                location=GCP_LOCATION,
+                api_key=GEMINI_API_KEY
+            )
+            logger.info(f"Vertex AI initialized for project {GCP_PROJECT_ID}.")
+        else:
+            client = genai.Client(api_key=GEMINI_API_KEY, vertexai=False)
+            logger.info("Gemini Developer API initialized.")
         vertex_model = client
-        logger.info(f"Vertex AI initialized for project {GCP_PROJECT_ID}.")
     except Exception as exc:
-        logger.error("Vertex AI Initialization Failure: %s", exc)
+        logger.error("AI Initialization Failure: %s", exc)
         raise RuntimeError(exc) from exc
     yield
     logger.info("Shutting down Terminal AI.")
