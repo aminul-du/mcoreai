@@ -1,0 +1,17 @@
+[Unit]
+Description=MCore Memory Trust Engine (MTE)
+After=network.target
+
+[Service]
+Type=simple
+User=mcoreai
+Group=mcoreai
+WorkingDirectory=/srv/mcore/mcore365/mcoresec/services/devsec/memory-trust-engine
+ExecStart=/srv/mcore/mcore365/mcoresec/services/devsec/memory-trust-engine/.venv/bin/uvicorn mte.server:app --host 127.0.0.1 --port 8100
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

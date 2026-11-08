@@ -1,0 +1,17 @@
+[Unit]
+Description=Sovereign Jupyter Colab Bridge (Python 3.14)
+After=network.target
+
+[Service]
+Type=simple
+User=mcoreai
+Group=mcoreai
+WorkingDirectory=/srv/aiseye
+ExecStart=/srv/aiseye/launch_colab_backend.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

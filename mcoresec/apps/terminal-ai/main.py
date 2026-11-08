@@ -22,7 +22,7 @@ MTE_TIMEOUT_SECONDS = float(os.getenv("MTE_TIMEOUT_SECONDS", "5.0"))
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "595209408050")
 GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
 USE_VERTEX_AI = os.getenv("USE_VERTEX_AI", "false").lower() in ("true", "1", "yes")
-VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-3.1-flash-lite-preview")
+VERTEX_MODEL_NAME = os.getenv("VERTEX_MODEL_NAME", "gemini-3.8-flash")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "PLACEHOLDER")
 

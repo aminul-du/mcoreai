@@ -1,0 +1,20 @@
+[Unit]
+Description=MCore Sovereign Terminal AI Microservice
+After=network.target mcoresec-mte.service
+Wants=mcoresec-mte.service
+
+[Service]
+Type=simple
+User=mcoreai
+Group=mcoreai
+WorkingDirectory=/srv/mcore/mcore365/mcoresec/apps/terminal-ai
+EnvironmentFile=-/srv/mcore/mcore365/mcoresec/apps/terminal-ai/.env
+Environment=MTE_WRITE_URL=http://127.0.0.1:8100/mte/write
+ExecStart=/srv/mcore/mcore365/mcoresec/apps/terminal-ai/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8200
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

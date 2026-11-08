@@ -1,0 +1,17 @@
+[Unit]
+Description=Qdrant High-Performance Vector Database
+After=network.target
+
+[Service]
+Type=simple
+User=mcoreai
+Group=mcoreai
+WorkingDirectory=/var/lib/qdrant
+ExecStart=/usr/local/bin/qdrant
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
