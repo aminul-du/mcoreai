@@ -1,0 +1,11 @@
+{
+  "experiment_id": "EXP-MTE-20261108-001",
+  "project_identity": "AIS-DU-PMICS",
+  "timestamp_utc": "2026-11-08T10:00:00Z",
+  "dataset_identifier": "clean_provenance_v1.jsonl",
+  "dataset_sha256": "ed7a3c303ef20ec49333c233332aa781084ccdfb6a4b8c548a33c42001e19b73",
+  "mte_version": "0.1.0",
+  "mte_verdict": "PASS",
+  "model_target": "gemini-3.8-flash",
+  "governance_status": "AIS_APPROVED_PENDING_PUBLICATION"
+}
