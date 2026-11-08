@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIS-DU-PMICS Experiment Evidence Schema",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "experiment_metadata",
+    "dataset_provenance",
+    "defense_metrics",
+    "evaluation_records",
+    "academic_governance"
+  ],
+  "properties": {
+    "experiment_metadata": {
+      "type": "object",
+      "required": [
+        "experiment_id",
+        "project_identity",
+        "founder_authority",
+        "timestamp_utc"
+      ]
+    },
+    "dataset_provenance": {
+      "type": "object",
+      "required": [
+        "dataset_sha256",
+        "total_samples"
+      ]
+    },
+    "defense_metrics": {
+      "type": "object",
+      "required": [
+        "evaluation_accuracy_percent",
+        "adversarial_quarantine_rate"
+      ]
+    },
+    "evaluation_records": {
+      "type": "array"
+    },
+    "academic_governance": {
+      "type": "object",
+      "required": [
+        "status",
+        "public_disclosure_state"
+      ]
+    }
+  }
+}

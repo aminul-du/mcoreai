@@ -251,3 +251,19 @@
 | Total AI Models | 2 |
 | Total AI Search Instances | 1 |
 | **Total Live Resources** | **56** |
+
+---
+
+## 3. Zone: `shorborno.ai` (Sovereign Academic Research & Presentation)
+
+**Zone ID:** `4215f8ffab32c865a0def2de7186e314`  
+**Status:** Active  
+**Nameservers:** `rafe.ns.cloudflare.com`, `uriah.ns.cloudflare.com`  
+**Academic Alignment:** `AIS-DU-PMICS-PROJECT-SBOX` (Dhaka University)  
+
+| # | Name | Type | Target Content | Proxied | Destination Architecture | Security & Auth |
+|---|---|---|---|---|---|---|
+| 22 | `docs.shorborno.ai` | CNAME | `mcore-docs.pages.dev` | 🟠 Yes | Cloudflare Pages (mcore-docs) | Edge CDN + SSL |
+| 23 | `research.shorborno.ai` | CNAME | `mcore-docs.pages.dev` | 🟠 Yes | Cloudflare Pages (Bilingual Portal) | Edge CDN + SSL |
+| 24 | `sbox.shorborno.ai` | CNAME | `78d7fa3b...cfargotunnel.com` | 🟠 Yes | Cloudflare Tunnel `ais001` -> `:8000` | Zero Trust Access |
+| 25 | `drive.shorborno.ai` | CNAME / Rule | Edge 301 Redirect | 🟠 Yes | Google Drive `AIS-DU-PMICS-PROJECT-SBOX` | Google Workspace Auth |

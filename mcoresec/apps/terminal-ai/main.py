@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 import logging
@@ -89,8 +90,9 @@ async def chat_endpoint(payload: ChatRequest):
         raise HTTPException(status_code=500, detail="Vertex AI uninitialized")
 
     try:
-        # Using the new SDK generate_content method for Vertex AI
-        response = vertex_model.models.generate_content(
+        # Non-blocking async thread dispatch for GenAI inference
+        response = await asyncio.to_thread(
+            vertex_model.models.generate_content,
             model=VERTEX_MODEL_NAME,
             contents=payload.prompt
         )

@@ -1,0 +1,13 @@
+{
+  "project": "AIS-DU-PMICS-PROJECT-SBOX",
+  "manifest_version": "1.0.0",
+  "timestamp_utc": "2026-11-08T11:30:00Z",
+  "dataset": {
+    "filename": "raw_provenance_baseline.jsonl",
+    "total_records": 6,
+    "clean_records": 3,
+    "adversarial_records": 3,
+    "sha256": "af0f230ab0c044476a673dd103fdd20d964de0b71b0785414c9ae812bf783727"
+  },
+  "provenance_authority": "MCORE-FDR-AIS-001"
+}
