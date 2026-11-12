@@ -1,0 +1,9 @@
+{
+  "name": "mcp-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'MCP gateway dev placeholder'",
+    "build": "echo 'MCP gateway build placeholder'"
+  }
+}
